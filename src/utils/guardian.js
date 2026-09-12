@@ -30,6 +30,17 @@ export async function openWeChat() {
   }
 }
 
+// 微信通话（语音/视频）
+// 微信未公开通话 API，深链跳到聊天界面，老人再点一下绿色通话按钮
+export async function openWeChatCall(wxid) {
+  try {
+    await GuardianPlugin.openWeChatDeepLink({ wxid: wxid || '' })
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, msg: '未安装微信' }
+  }
+}
+
 // 打开抖音
 export async function openDouyin() {
   try {

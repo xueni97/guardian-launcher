@@ -1,8 +1,11 @@
 <template>
-  <div class="settings-page safe-top safe-bottom">
+  <div class="settings-page">
     <van-nav-bar
       title="设置"
       left-arrow
+      fixed
+      safe-area-inset-top
+      placeholder
       @click-left="$router.push('/')"
     />
 
@@ -31,6 +34,25 @@
           is-link
           @click="$router.push('/contacts')"
         />
+      </van-cell-group>
+
+      <!-- 桌面显示 -->
+      <van-cell-group inset title="桌面显示">
+        <van-cell title="联系人显示模式" center>
+          <template #label>
+            <span class="cell-tip">照片模式需先给联系人上传大头贴</span>
+          </template>
+          <template #right-icon>
+            <van-switch
+              :model-value="settings.displayMode === 'photo'"
+              size="28px"
+              @update:model-value="onDisplayModeChange"
+            />
+          </template>
+          <template #value>
+            {{ settings.displayMode === 'photo' ? '大头贴照片' : '名字' }}
+          </template>
+        </van-cell>
       </van-cell-group>
 
       <!-- 守护功能 -->
@@ -135,6 +157,13 @@ function verifyPassword() {
   }
 }
 
+// 桌面联系人显示模式切换（名字/照片）
+function onDisplayModeChange(val) {
+  settings.displayMode = val ? 'photo' : 'name'
+  saveSettings({ ...settings })
+  showToast(val ? '已切换为大头贴照片' : '已切换为名字')
+}
+
 async function onBlockInstallChange(val) {
   if (val) {
     const res = await setInstallBlocked(true)
@@ -202,6 +231,11 @@ onMounted(() => {
 .settings-page {
   min-height: 100vh;
   background: #f5f7fa;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.cell-tip {
+  font-size: 16px;
+  color: #999;
 }
 .password-box {
   padding: 48px 24px;

@@ -16,7 +16,12 @@
           class="contact-item"
           @click="onContactClick(contact)"
         >
-          <div class="avatar" :style="{ background: contact.avatar }">
+          <!-- 照片模式：有大头贴显示照片 -->
+          <div v-if="displayMode === 'photo' && contact.photo" class="avatar photo-avatar">
+            <img :src="contact.photo" :alt="contact.name" />
+          </div>
+          <!-- 名字模式：显示名字首字 -->
+          <div v-else class="avatar" :style="{ background: contact.avatar }">
             {{ contact.name.charAt(0) }}
           </div>
           <div class="contact-name">{{ contact.name }}</div>
@@ -52,28 +57,51 @@
       <div class="settings-entry" @click="goSettings">设置</div>
     </div>
 
-    <!-- 拨号选择弹层 -->
-    <van-action-sheet
+    <!-- 呼叫方式选择弹层：三个超大按钮 -->
+    <van-popup
       v-model:show="showCallSheet"
-      :actions="callActions"
-      :cancel-text="'取消'"
-      close-on-click-action
-      @select="onCallSelect"
-    />
+      position="bottom"
+      round
+      :style="{ maxHeight: '85%' }"
+    >
+      <div class="call-sheet">
+        <div class="call-title">
+          呼叫 <span class="call-name">{{ selectedContact?.name || '' }}</span>
+        </div>
+
+        <div class="call-btn video" @click="doWeChatVideo">
+          <span class="call-btn-icon">📹</span>
+          <span class="call-btn-text">微信视频通话</span>
+        </div>
+
+        <div class="call-btn voice" @click="doWeChatVoice">
+          <span class="call-btn-icon">📞</span>
+          <span class="call-btn-text">微信语音通话</span>
+        </div>
+
+        <div class="call-btn phone" @click="doPhoneCall">
+          <span class="call-btn-icon">☎️</span>
+          <span class="call-btn-text">打电话 {{ selectedContact?.phone || '' }}</span>
+        </div>
+
+        <div class="call-cancel" @click="showCallSheet = false">取消</div>
+      </div>
+    </van-popup>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { showToast } from 'vant'
-import { loadContacts } from '../db/contacts'
-import { callPhone, openWeChat, openDouyin, openApp } from '../utils/guardian'
+import { loadContacts, loadSettings } from '../db/contacts'
+import { callPhone, openWeChat, openWeChatCall, openDouyin, openApp } from '../utils/guardian'
 
 const contacts = ref([])
 const currentTime = ref('')
 const currentDate = ref('')
 const showCallSheet = ref(false)
 const selectedContact = ref(null)
+const displayMode = ref('name')
 
 let timer = null
 
@@ -87,30 +115,31 @@ function updateClock() {
   currentDate.value = `${now.getMonth() + 1}月${now.getDate()}日 ${weekdays[now.getDay()]}`
 }
 
-const callActions = computed(() => {
-  if (!selectedContact.value) return []
-  const actions = [
-    { name: `拨打电话 ${selectedContact.value.phone}`, phone: selectedContact.value.phone }
-  ]
-  if (selectedContact.value.wxid) {
-    actions.push({ name: '微信语音通话', wechat: true })
-  } else {
-    actions.push({ name: '打开微信', wechat: true })
-  }
-  return actions
-})
-
 function onContactClick(contact) {
   selectedContact.value = contact
   showCallSheet.value = true
 }
 
-async function onCallSelect(action) {
-  if (action.phone) {
-    await callPhone(action.phone)
-  } else if (action.wechat) {
-    const res = await openWeChat()
-    if (!res.ok) showToast(res.msg || '未安装微信')
+// 微信视频通话
+async function doWeChatVideo() {
+  showCallSheet.value = false
+  const res = await openWeChatCall(selectedContact.value?.wxid)
+  if (!res.ok) showToast(res.msg || '未安装微信')
+}
+
+// 微信语音通话
+async function doWeChatVoice() {
+  showCallSheet.value = false
+  const res = await openWeChatCall(selectedContact.value?.wxid)
+  if (!res.ok) showToast(res.msg || '未安装微信')
+}
+
+// 打电话
+async function doPhoneCall() {
+  showCallSheet.value = false
+  const phone = selectedContact.value?.phone
+  if (phone) {
+    await callPhone(phone)
   }
 }
 
@@ -140,6 +169,7 @@ function goSettings() {
 
 onMounted(() => {
   contacts.value = loadContacts()
+  displayMode.value = loadSettings().displayMode || 'name'
   updateClock()
   timer = setInterval(updateClock, 1000)
 })
@@ -207,6 +237,13 @@ onUnmounted(() => {
   color: #fff;
   font-weight: 700;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+.photo-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .contact-name {
   font-size: 22px;
@@ -260,5 +297,62 @@ onUnmounted(() => {
   font-size: 20px;
   color: #999;
   padding: 12px 32px;
+}
+
+/* ============ 呼叫方式弹层：三个超大按钮 ============ */
+.call-sheet {
+  padding: 28px 20px calc(20px + env(safe-area-inset-bottom));
+}
+.call-title {
+  font-size: 30px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 24px;
+  color: #1a1a1a;
+}
+.call-name {
+  color: #1a73e8;
+}
+.call-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  height: 84px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+.call-btn-icon {
+  font-size: 36px;
+}
+.call-btn-text {
+  font-size: 30px;
+}
+/* 微信视频：绿色 */
+.call-btn.video {
+  background: linear-gradient(135deg, #07c160 0%, #05ad56 100%);
+}
+/* 微信语音：蓝绿色 */
+.call-btn.voice {
+  background: linear-gradient(135deg, #29a56c 0%, #1a8f5a 100%);
+}
+/* 打电话：蓝色 */
+.call-btn.phone {
+  background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+}
+.call-cancel {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  color: #666;
+  background: #f0f2f5;
+  border-radius: 20px;
+  margin-top: 4px;
 }
 </style>

@@ -1,8 +1,11 @@
 <template>
-  <div class="contacts-page safe-top safe-bottom">
+  <div class="contacts-page">
     <van-nav-bar
       title="联系人管理"
       left-arrow
+      fixed
+      safe-area-inset-top
+      placeholder
       @click-left="$router.push('/')"
     />
     <div class="content">
@@ -17,7 +20,10 @@
 
       <div class="contact-list">
         <div v-for="c in contacts" :key="c.id" class="contact-row">
-          <div class="row-avatar" :style="{ background: c.avatar }">
+          <div v-if="c.photo" class="row-avatar photo">
+            <img :src="c.photo" alt="" />
+          </div>
+          <div v-else class="row-avatar" :style="{ background: c.avatar }">
             {{ c.name.charAt(0) }}
           </div>
           <div class="row-info">
@@ -37,6 +43,26 @@
     <van-popup v-model:show="showEdit" position="bottom" round style="height: 80%">
       <div class="edit-form">
         <h3>{{ editing.id ? '编辑联系人' : '添加联系人' }}</h3>
+
+        <!-- 照片上传（大头贴） -->
+        <div class="photo-upload">
+          <div class="photo-preview" @click="triggerPhotoPick">
+            <img v-if="editing.photo" :src="editing.photo" alt="头像" />
+            <div v-else class="photo-placeholder">
+              <span class="photo-plus">+</span>
+              <span class="photo-hint">上传照片</span>
+            </div>
+          </div>
+          <div v-if="editing.photo" class="photo-remove" @click="editing.photo = ''">删除照片</div>
+          <input
+            ref="photoInput"
+            type="file"
+            accept="image/*"
+            style="display: none"
+            @change="onPhotoChange"
+          />
+        </div>
+
         <van-cell-group inset>
           <van-field v-model="editing.name" label="姓名" placeholder="请输入姓名" />
           <van-field v-model="editing.phone" label="电话" placeholder="请输入电话号码" type="tel" />
@@ -74,7 +100,8 @@ import { loadContacts, addContact, updateContact, deleteContact } from '../db/co
 
 const contacts = ref([])
 const showEdit = ref(false)
-const editing = reactive({ id: '', name: '', phone: '', relation: '', wxid: '', avatar: '#1a73e8' })
+const photoInput = ref(null)
+const editing = reactive({ id: '', name: '', phone: '', relation: '', wxid: '', avatar: '#1a73e8', photo: '' })
 
 const colorList = ['#1a73e8', '#e91e63', '#43a047', '#fb8c00', '#8e24aa', '#00acc1', '#5d4037', '#546e7a']
 
@@ -85,6 +112,53 @@ function refresh() {
 function editContact(c) {
   Object.assign(editing, c)
   showEdit.value = true
+}
+
+// ============ 照片上传：压缩裁剪成 240x240 正方形 ============
+function triggerPhotoPick() {
+  photoInput.value && photoInput.value.click()
+}
+
+function onPhotoChange(e) {
+  const file = e.target.files && e.target.files[0]
+  if (!file) return
+  compressImage(file).then(base64 => {
+    editing.photo = base64
+  })
+  // 清空 input，允许重复选择同一张图
+  e.target.value = ''
+}
+
+function compressImage(file) {
+  return new Promise(resolve => {
+    const reader = new FileReader()
+    reader.onload = ev => {
+      const img = new Image()
+      img.onload = () => {
+        const size = 240
+        const canvas = document.createElement('canvas')
+        canvas.width = size
+        canvas.height = size
+        const ctx = canvas.getContext('2d')
+        // 居中裁剪成正方形
+        const min = Math.min(img.width, img.height)
+        ctx.drawImage(
+          img,
+          (img.width - min) / 2,
+          (img.height - min) / 2,
+          min,
+          min,
+          0,
+          0,
+          size,
+          size
+        )
+        resolve(canvas.toDataURL('image/jpeg', 0.85))
+      }
+      img.src = ev.target.result
+    }
+    reader.readAsDataURL(file)
+  })
 }
 
 async function removeContact(id) {
@@ -107,7 +181,7 @@ function saveContact() {
     addContact({ ...editing })
   }
   showEdit.value = false
-  Object.assign(editing, { id: '', name: '', phone: '', relation: '', wxid: '', avatar: '#1a73e8' })
+  Object.assign(editing, { id: '', name: '', phone: '', relation: '', wxid: '', avatar: '#1a73e8', photo: '' })
   refresh()
   showToast('已保存')
 }
@@ -119,6 +193,7 @@ onMounted(refresh)
 .contacts-page {
   min-height: 100vh;
   background: #f5f7fa;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 .content {
   padding: 16px;
@@ -146,6 +221,13 @@ onMounted(refresh)
   color: #fff;
   font-weight: 700;
   flex-shrink: 0;
+  overflow: hidden;
+}
+.row-avatar.photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .row-info {
   flex: 1;
@@ -173,10 +255,57 @@ onMounted(refresh)
 }
 .edit-form {
   padding: 24px 16px;
+  overflow-y: auto;
 }
 .edit-form h3 {
   font-size: 28px;
   margin: 0 0 16px;
+}
+
+/* 照片上传区 */
+.photo-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.photo-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #f0f2f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 3px dashed #c8ccd4;
+}
+.photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.photo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #999;
+}
+.photo-plus {
+  font-size: 44px;
+  line-height: 1;
+}
+.photo-hint {
+  font-size: 18px;
+  margin-top: 4px;
+}
+.photo-remove {
+  font-size: 18px;
+  color: #e53935;
+  margin-top: 8px;
+  padding: 4px 12px;
 }
 .color-picker {
   padding: 16px;

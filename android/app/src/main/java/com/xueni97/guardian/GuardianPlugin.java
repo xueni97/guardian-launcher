@@ -76,6 +76,38 @@ public class GuardianPlugin extends Plugin {
         }
     }
 
+    // ============ 打开微信指定聊天（用于微信语音/视频通话） ============
+    // 微信未公开语音/视频通话 API，只能深链跳到聊天界面，由老人点一下绿色按钮
+    @PluginMethod
+    public void openWeChatDeepLink(PluginCall call) {
+        String wxid = call.getString("wxid", "");
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setPackage("com.tencent.mm");
+            if (!wxid.isEmpty()) {
+                // 尝试深链到指定聊天（部分微信版本支持）
+                intent.setData(Uri.parse("weixin://dl/chat?" + wxid));
+            }
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            getContext().startActivity(intent);
+            call.resolve();
+        } catch (Exception e) {
+            // 深链失败，降级为打开微信主页
+            try {
+                Intent intent = getContext().getPackageManager().getLaunchIntentForPackage("com.tencent.mm");
+                if (intent != null) {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    getContext().startActivity(intent);
+                    call.resolve();
+                } else {
+                    call.reject("微信未安装");
+                }
+            } catch (Exception e2) {
+                call.reject("打开微信失败: " + e2.getMessage());
+            }
+        }
+    }
+
     // ============ 检查是否为设备所有者 ============
     @PluginMethod
     public void isDeviceOwner(PluginCall call) {

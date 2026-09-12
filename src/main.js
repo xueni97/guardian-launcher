@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
+import { App as CapacitorApp } from '@capacitor/app'
 import Vant from 'vant'
 import 'vant/lib/index.css'
 import App from './App.vue'
@@ -16,6 +17,14 @@ const router = createRouter({
     { path: '/contacts', name: 'contacts', component: ContactsPage },
     { path: '/settings', name: 'settings', component: SettingsPage }
   ]
+})
+
+// Android 返回键/侧滑手势拦截：
+// 子页面返回首页；首页本身是桌面启动器，不响应返回（防误退）
+CapacitorApp.addListener('backButton', () => {
+  if (router.currentRoute.value.path !== '/') {
+    router.push('/')
+  }
 })
 
 const app = createApp(App)

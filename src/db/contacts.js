@@ -1,5 +1,5 @@
 // 联系人本地存储 - 用 localStorage（老人手机无需复杂数据库）
-// 联系人结构: { id, name, phone, wxid, avatar(color), relation }
+// 联系人结构: { id, name, phone, wxid, avatar(color), photo(base64), relation }
 
 const STORAGE_KEY = 'guardian_contacts'
 
@@ -58,7 +58,8 @@ const DEFAULT_SETTINGS = {
   fontScale: 'large',        // 字体大小: normal / large / xlarge
   blockInstall: true,        // 阻止安装新应用
   allowDouyin: true,         // 允许抖音
-  lockMode: false            // 固定屏幕模式（需设备所有者权限）
+  lockMode: false,           // 固定屏幕模式（需设备所有者权限）
+  displayMode: 'name'        // 桌面联系人显示模式: name(名字) / photo(大头贴照片)
 }
 
 export function loadSettings() {
