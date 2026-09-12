@@ -1,9 +1,0 @@
-feat: 无障碍服务自动拨打微信视频/语音，修复页面无法访问
-
-- 参考 wechat_video_call 项目，新增 WeChatCallService 无障碍状态机：
-  回主页->搜索->输入备注名->点联系人->点+->点视频/语音通话->确认
-- 移除 weixin://dl/chat 深链（微信内报"当前页面无法访问"的根源）
-- 插件新增 startWeChatCall/isAccessibilityEnabled/openAccessibilitySettings
-- 联系人字段改为微信备注名(wxname)，用于自动搜索
-- 设置页新增无障碍服务状态显示与跳转开启
-- 查找策略：文本/描述优先 -> viewId 兜底 -> 手势坐标点击，跨微信版本适配
