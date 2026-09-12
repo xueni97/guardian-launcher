@@ -67,7 +67,7 @@
           <van-field v-model="editing.name" label="姓名" placeholder="请输入姓名" />
           <van-field v-model="editing.phone" label="电话" placeholder="请输入电话号码" type="tel" />
           <van-field v-model="editing.relation" label="关系" placeholder="如：儿子、女儿" />
-          <van-field v-model="editing.wxid" label="微信号" placeholder="选填，用于微信直达" />
+          <van-field v-model="editing.wxname" label="微信备注名" placeholder="微信里的备注或昵称，用于自动拨号" />
         </van-cell-group>
 
         <div class="color-picker">
@@ -101,7 +101,7 @@ import { loadContacts, addContact, updateContact, deleteContact } from '../db/co
 const contacts = ref([])
 const showEdit = ref(false)
 const photoInput = ref(null)
-const editing = reactive({ id: '', name: '', phone: '', relation: '', wxid: '', avatar: '#1a73e8', photo: '' })
+const editing = reactive({ id: '', name: '', phone: '', relation: '', wxname: '', avatar: '#1a73e8', photo: '' })
 
 const colorList = ['#1a73e8', '#e91e63', '#43a047', '#fb8c00', '#8e24aa', '#00acc1', '#5d4037', '#546e7a']
 
@@ -181,7 +181,7 @@ function saveContact() {
     addContact({ ...editing })
   }
   showEdit.value = false
-  Object.assign(editing, { id: '', name: '', phone: '', relation: '', wxid: '', avatar: '#1a73e8', photo: '' })
+  Object.assign(editing, { id: '', name: '', phone: '', relation: '', wxname: '', avatar: '#1a73e8', photo: '' })
   refresh()
   showToast('已保存')
 }

@@ -1,13 +1,13 @@
 // 联系人本地存储 - 用 localStorage（老人手机无需复杂数据库）
-// 联系人结构: { id, name, phone, wxid, avatar(color), photo(base64), relation }
+// 联系人结构: { id, name, phone, wxname(微信备注名), avatar(color), photo(base64), relation }
 
 const STORAGE_KEY = 'guardian_contacts'
 
 // 默认联系人（演示用，可在设置页编辑）
 const DEFAULT_CONTACTS = [
-  { id: '1', name: '儿子', phone: '13800138000', wxid: '', avatar: '#1a73e8', relation: '儿子' },
-  { id: '2', name: '女儿', phone: '13800138001', wxid: '', avatar: '#e91e63', relation: '女儿' },
-  { id: '3', name: '孙子', phone: '13800138002', wxid: '', avatar: '#43a047', relation: '孙子' }
+  { id: '1', name: '儿子', phone: '13800138000', wxname: '', avatar: '#1a73e8', relation: '儿子' },
+  { id: '2', name: '女儿', phone: '13800138001', wxname: '', avatar: '#e91e63', relation: '女儿' },
+  { id: '3', name: '孙子', phone: '13800138002', wxname: '', avatar: '#43a047', relation: '孙子' }
 ]
 
 export function loadContacts() {

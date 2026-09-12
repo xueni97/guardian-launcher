@@ -94,7 +94,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { showToast } from 'vant'
 import { loadContacts, loadSettings } from '../db/contacts'
-import { callPhone, openWeChat, openWeChatCall, openDouyin, openApp } from '../utils/guardian'
+import { callPhone, openWeChat, startWeChatCall, openDouyin, openApp } from '../utils/guardian'
 
 const contacts = ref([])
 const currentTime = ref('')
@@ -120,18 +120,20 @@ function onContactClick(contact) {
   showCallSheet.value = true
 }
 
-// 微信视频通话
+// 微信视频通话：无障碍自动拨号
 async function doWeChatVideo() {
   showCallSheet.value = false
-  const res = await openWeChatCall(selectedContact.value?.wxid)
-  if (!res.ok) showToast(res.msg || '未安装微信')
+  const c = selectedContact.value
+  const res = await startWeChatCall(c.wxname || c.name, 'video')
+  if (!res.ok) showToast(res.msg)
 }
 
-// 微信语音通话
+// 微信语音通话：无障碍自动拨号
 async function doWeChatVoice() {
   showCallSheet.value = false
-  const res = await openWeChatCall(selectedContact.value?.wxid)
-  if (!res.ok) showToast(res.msg || '未安装微信')
+  const c = selectedContact.value
+  const res = await startWeChatCall(c.wxname || c.name, 'voice')
+  if (!res.ok) showToast(res.msg)
 }
 
 // 打电话

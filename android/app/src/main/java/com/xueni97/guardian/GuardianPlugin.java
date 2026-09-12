@@ -76,35 +76,54 @@ public class GuardianPlugin extends Plugin {
         }
     }
 
-    // ============ 打开微信指定聊天（用于微信语音/视频通话） ============
-    // 微信未公开语音/视频通话 API，只能深链跳到聊天界面，由老人点一下绿色按钮
+    // ============ 微信自动拨号（无障碍服务方案） ============
+    // 打开微信并由无障碍服务自动完成：搜索联系人 -> 点+ -> 发起视频/语音通话
     @PluginMethod
-    public void openWeChatDeepLink(PluginCall call) {
-        String wxid = call.getString("wxid", "");
+    public void startWeChatCall(PluginCall call) {
+        String keyword = call.getString("keyword", "");
+        String mode = call.getString("mode", "video");
+        if (keyword.isEmpty()) {
+            call.reject("缺少联系人微信备注名");
+            return;
+        }
+        if (!WeChatCallService.isReady()) {
+            call.reject("无障碍服务未开启，请到设置中开启");
+            return;
+        }
         try {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setPackage("com.tencent.mm");
-            if (!wxid.isEmpty()) {
-                // 尝试深链到指定聊天（部分微信版本支持）
-                intent.setData(Uri.parse("weixin://dl/chat?" + wxid));
+            Intent intent = getContext().getPackageManager().getLaunchIntentForPackage("com.tencent.mm");
+            if (intent == null) {
+                call.reject("微信未安装");
+                return;
             }
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+            getContext().startActivity(intent);
+            // 启动无障碍状态机（等微信窗口出现后自动操作）
+            WeChatCallService.startCall(keyword, "video".equals(mode));
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("拨号失败: " + e.getMessage());
+        }
+    }
+
+    // ============ 检查无障碍服务是否开启 ============
+    @PluginMethod
+    public void isAccessibilityEnabled(PluginCall call) {
+        JSObject ret = new JSObject();
+        ret.put("enabled", WeChatCallService.isReady());
+        call.resolve(ret);
+    }
+
+    // ============ 跳转系统无障碍设置页 ============
+    @PluginMethod
+    public void openAccessibilitySettings(PluginCall call) {
+        try {
+            Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             getContext().startActivity(intent);
             call.resolve();
         } catch (Exception e) {
-            // 深链失败，降级为打开微信主页
-            try {
-                Intent intent = getContext().getPackageManager().getLaunchIntentForPackage("com.tencent.mm");
-                if (intent != null) {
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    getContext().startActivity(intent);
-                    call.resolve();
-                } else {
-                    call.reject("微信未安装");
-                }
-            } catch (Exception e2) {
-                call.reject("打开微信失败: " + e2.getMessage());
-            }
+            call.reject("打开设置失败: " + e.getMessage());
         }
     }
 

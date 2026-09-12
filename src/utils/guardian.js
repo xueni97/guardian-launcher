@@ -30,14 +30,35 @@ export async function openWeChat() {
   }
 }
 
-// 微信通话（语音/视频）
-// 微信未公开通话 API，深链跳到聊天界面，老人再点一下绿色通话按钮
-export async function openWeChatCall(wxid) {
+// 微信自动拨号（无障碍服务方案）
+// 自动打开微信 -> 搜索联系人 -> 点+ -> 发起视频/语音通话
+// keyword 为微信里的备注名/昵称，mode: 'video' | 'voice'
+export async function startWeChatCall(keyword, mode) {
   try {
-    await GuardianPlugin.openWeChatDeepLink({ wxid: wxid || '' })
+    await GuardianPlugin.startWeChatCall({ keyword, mode })
     return { ok: true }
   } catch (e) {
-    return { ok: false, msg: '未安装微信' }
+    return { ok: false, msg: e.message || '拨号失败' }
+  }
+}
+
+// 检查无障碍服务是否开启
+export async function isAccessibilityEnabled() {
+  try {
+    const res = await GuardianPlugin.isAccessibilityEnabled()
+    return !!res.enabled
+  } catch (e) {
+    return false
+  }
+}
+
+// 跳转系统无障碍设置页
+export async function openAccessibilitySettings() {
+  try {
+    await GuardianPlugin.openAccessibilitySettings()
+    return { ok: true }
+  } catch (e) {
+    return { ok: false }
   }
 }
 

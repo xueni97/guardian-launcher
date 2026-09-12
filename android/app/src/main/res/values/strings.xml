@@ -6,4 +6,6 @@
     <string name="custom_url_scheme">com.xueni97.guardian</string>
     <string name="device_admin_label">守护桌面设备管理</string>
     <string name="device_admin_description">守护桌面需要设备管理权限以阻止应用安装、隐藏应用，保护老人手机安全。</string>
+    <string name="accessibility_label">守护桌面·微信自动拨号</string>
+    <string name="accessibility_desc">用于一键自动拨打微信视频/语音通话：自动搜索联系人并发起通话。开启后请勿关闭，否则一键拨号不可用。</string>
 </resources>

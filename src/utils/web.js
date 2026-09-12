@@ -7,6 +7,15 @@ export class GuardianWeb {
   async openApp() {
     return { ok: false, msg: 'Web 环境不支持' }
   }
+  async startWeChatCall() {
+    return { ok: false, msg: 'Web 环境不支持' }
+  }
+  async isAccessibilityEnabled() {
+    return { enabled: false }
+  }
+  async openAccessibilitySettings() {
+    return { ok: false }
+  }
   async isDeviceOwner() {
     return { isOwner: false }
   }

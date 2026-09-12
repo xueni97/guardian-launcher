@@ -36,6 +36,20 @@
         />
       </van-cell-group>
 
+      <!-- 微信自动拨号 -->
+      <van-cell-group inset title="微信自动拨号">
+        <van-cell
+          title="无障碍服务"
+          :value="accessibilityOn ? '已开启' : '未开启'"
+          is-link
+          @click="goAccessibility"
+        >
+          <template #label>
+            <span class="cell-tip">开启后，点联系人即可自动拨打微信视频/语音通话</span>
+          </template>
+        </van-cell>
+      </van-cell-group>
+
       <!-- 桌面显示 -->
       <van-cell-group inset title="桌面显示">
         <van-cell title="联系人显示模式" center>
@@ -135,7 +149,9 @@ import {
   setInstallBlocked,
   setLockTask,
   setAppHidden,
-  goSystemHome as goSystemHomeNative
+  goSystemHome as goSystemHomeNative,
+  isAccessibilityEnabled,
+  openAccessibilitySettings
 } from '../utils/guardian'
 
 const unlocked = ref(false)
@@ -143,10 +159,22 @@ const password = ref('')
 const newPassword = ref('')
 const isOwner = ref(false)
 const showAdbHelp = ref(false)
+const accessibilityOn = ref(false)
 const settings = reactive(loadSettings())
 
 async function checkOwner() {
   isOwner.value = await isDeviceOwner()
+  accessibilityOn.value = await isAccessibilityEnabled()
+}
+
+// 跳转系统无障碍设置开启服务
+async function goAccessibility() {
+  if (accessibilityOn.value) {
+    showToast('无障碍服务已开启')
+    return
+  }
+  await openAccessibilitySettings()
+  showToast('请找到「守护桌面」并开启')
 }
 
 function verifyPassword() {
