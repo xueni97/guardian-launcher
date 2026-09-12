@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">守护桌面</string>
+    <string name="title_activity_main">守护桌面</string>
+    <string name="package_name">com.xueni97.guardian</string>
+    <string name="custom_url_scheme">com.xueni97.guardian</string>
+    <string name="device_admin_label">守护桌面设备管理</string>
+    <string name="device_admin_description">守护桌面需要设备管理权限以阻止应用安装、隐藏应用，保护老人手机安全。</string>
+</resources>

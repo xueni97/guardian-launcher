@@ -1,0 +1,13 @@
+node_modules
+dist
+dist-ssr
+dev-dist
+*.local
+.DS_Store
+.superpowers
+.vscode/*
+!.vscode/extensions.json
+
+# Capacitor sync 产物（CI 中重新生成）
+android/app/src/main/assets/public/
+android/capacitor-cordova-android-plugins/

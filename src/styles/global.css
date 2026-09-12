@@ -1,0 +1,47 @@
+/* 守护桌面全局样式 - 老人友好大字 */
+
+/* 统一大按钮样式 */
+.big-btn {
+  width: 100%;
+  height: 72px;
+  font-size: 26px !important;
+  font-weight: 600;
+  border-radius: 16px !important;
+  margin: 12px 0;
+}
+
+/* 卡片样式 */
+.card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px;
+  margin: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* 标题大字 */
+.page-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.page-subtitle {
+  font-size: 20px;
+  color: #666;
+  margin: 8px 0 0 0;
+}
+
+/* 安全区域适配 */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 隐藏滚动条 */
+::-webkit-scrollbar {
+  display: none;
+}

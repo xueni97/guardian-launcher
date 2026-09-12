@@ -1,0 +1,8 @@
+{
+  "appId": "com.xueni97.guardian",
+  "appName": "守护桌面",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": false
+  }
+}
